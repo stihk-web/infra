@@ -1,0 +1,19 @@
+#!/bin/bash
+
+main(){
+    echo ">>>> Action started"
+    # Decode the secret passed by the action and paste the config in a file.
+    echo $KUBECONFIG | base64 -d > ./kubeconfig.yaml
+    echo ">>>> kubeconfig created"
+    # Check if the kubernetes directory has change
+    diff=$(git diff --exit-code HEAD~1 HEAD ./kubernetes)
+    if [ $? -eq 1 ]; then
+        echo ">>>> Detected a change inside the kubernetes directory"
+        # Apply the changes with --dryrun just to validate them
+        kubectl apply --kubeconfig ./kubeconfig.yaml --dry-run -f ./kubernetes
+    else
+        echo ">>>> No changed detected inside the ./kubernetes folder. Nothing to do."
+    fi
+}
+
+main "$@"
